@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User{
+  id        Int    @id @default(autoincrement())
+  name      String
+  email     String
+  password  String
+
+  zap     Zap[]
+}
+
+model Zap{
+  id          String  @id @default(uuid())
+  name        String 
+  userId      Int
+  createdAt   DateTime  @default(now())
+
+  user    User    @relation(fields:[userId], references: [id])
+  trigger   Trigger?
+  actions   Action[]
+
+  zapRuns  ZapRun[]   
+}
+
+model Trigger{
+  id      String    @id @default(uuid())
+  zapId   String    @unique
+  typeId  String
+  
+  zap     Zap               @relation(fields:[zapId], references: [id])
+  type    AvailableTrigger  @relation(fields:[typeId], references: [id])
+}
+
+model Action{
+  id      String    @id  @default(uuid())
+  zapId   String    
+  typeId  String
+  order   Int
+
+  zap     Zap       @relation(fields:[zapId], references: [id])
+  type    AvailableAction   @relation(fields:[typeId], references:[id])
+}
+
+model AvailableTrigger{
+  id      String  @id @default(uuid())
+  name    String
+  description   String?
+  triggers    Trigger[]
+}
+
+model AvailableAction {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  description String?
+
+  actions  Action[]
+}
+
+model ZapRun{
+  id      String      @id @default(uuid())
+  zapId   String
+  zap     Zap         @relation(fields: [zapId], references: [id])
+  metadata  Json
+  time    DateTime    @default(now())
+  zapRunOutBox  ZapRunOutbox?
+}
+
+model ZapRunOutbox{
+  id        String      @id  @default(uuid())
+  zapRunId  String      @unique
+  zapRun    ZapRun      @relation(fields:[zapRunId], references: [id])
+}
+
