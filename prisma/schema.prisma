@@ -74,12 +74,13 @@ model ZapRun{
   zapId   String
   zap     Zap         @relation(fields: [zapId], references: [id])
   metadata  Json
-  time    DateTime    @default(now())
+  triggerTime    DateTime    @default(now())
   zapRunOutBox  ZapRunOutbox?
 }
 
 model ZapRunOutbox{
   id        String      @id  @default(uuid())
+  createdAt DateTime    @default(now())
   zapRunId  String      @unique
   zapRun    ZapRun      @relation(fields:[zapRunId], references: [id])
 }
